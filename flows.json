@@ -1,0 +1,294 @@
+[
+    {
+        "id": "9e2f80e72d26ef7d",
+        "type": "ui_gauge",
+        "z": "c03eb7f66101a70f",
+        "name": "gauge-damp",
+        "group": "1a1654d3d0e311dd",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "",
+        "label": "ppm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1024",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "className": "",
+        "x": 410,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "8c95ab5b0b9dfa13",
+        "type": "mqtt in",
+        "z": "c03eb7f66101a70f",
+        "name": "esp-damp",
+        "topic": "1941720043/room/damp",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "dab34601.9f2cc8",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 360,
+        "wires": [
+            [
+                "9e2f80e72d26ef7d",
+                "d1ddb59c7139fddf"
+            ]
+        ]
+    },
+    {
+        "id": "d1ddb59c7139fddf",
+        "type": "function",
+        "z": "c03eb7f66101a70f",
+        "name": "",
+        "func": "m = msg.payload\nt = msg.topic;\n\nif (m <= 190)\n{\n    return {topic:t, payload:'Ruangan dalam kondisi aman!'};\n}\n\nelse if(190 <= m && m <= 385)\n{\n    return {topic:t, payload:'Terdeteksi adanya kebocoran gas!'};\n}\n\nelse if(m > 385)\n{\n    return {topic:t, payload:'Kebocoran gas darurat!'};\n}\n//return msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 360,
+        "wires": [
+            [
+                "3023f6063c555eb6"
+            ]
+        ]
+    },
+    {
+        "id": "413f80bc86fb92ab",
+        "type": "inject",
+        "z": "c03eb7f66101a70f",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 400,
+        "y": 400,
+        "wires": [
+            [
+                "d1ddb59c7139fddf"
+            ]
+        ]
+    },
+    {
+        "id": "3023f6063c555eb6",
+        "type": "ui_text",
+        "z": "c03eb7f66101a70f",
+        "group": "1a1654d3d0e311dd",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "damp",
+        "label": "Kondisi Gas",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "x": 570,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "5a16647f40985bab",
+        "type": "comment",
+        "z": "c03eb7f66101a70f",
+        "name": "Room Control",
+        "info": "",
+        "x": 130,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "52e28b4afe661c2d",
+        "type": "mqtt in",
+        "z": "c03eb7f66101a70f",
+        "name": "esp-damp",
+        "topic": "1941720043/room/damp",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "dab34601.9f2cc8",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 260,
+        "y": 720,
+        "wires": [
+            [
+                "58a1cb81c7cedc21"
+            ]
+        ]
+    },
+    {
+        "id": "58a1cb81c7cedc21",
+        "type": "ui_chart",
+        "z": "c03eb7f66101a70f",
+        "name": "room-damp",
+        "group": "a5e68e3cd4c6cdc8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Kadar Gas",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "0",
+        "ymax": "255",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 590,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "40ad45acda5aba60",
+        "type": "comment",
+        "z": "c03eb7f66101a70f",
+        "name": "Room Control",
+        "info": "",
+        "x": 110,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "a8a3825014287a72",
+        "type": "ui_text",
+        "z": "c03eb7f66101a70f",
+        "group": "c463d868f3ac1881",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "lb-contact",
+        "label": "Kelas: ",
+        "format": "TI-3E",
+        "layout": "row-left",
+        "x": 400,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "1a1654d3d0e311dd",
+        "type": "ui_group",
+        "name": "Gauge-Control",
+        "tab": "a4f30ceef630f3d9",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "dab34601.9f2cc8",
+        "type": "mqtt-broker",
+        "name": "Mqtt Server AWS",
+        "broker": "broker.hivemq.com",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "compatmode": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "a5e68e3cd4c6cdc8",
+        "type": "ui_group",
+        "name": "Chart-Control",
+        "tab": "a4f30ceef630f3d9",
+        "order": 2,
+        "disp": true,
+        "width": "8",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "c463d868f3ac1881",
+        "type": "ui_group",
+        "name": "Institusi",
+        "tab": "3a8884db01fb57a2",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "a4f30ceef630f3d9",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "fa-home",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "3a8884db01fb57a2",
+        "type": "ui_tab",
+        "name": "Contact",
+        "icon": "fa-address-book-o",
+        "order": 7,
+        "disabled": true,
+        "hidden": true
+    }
+]
