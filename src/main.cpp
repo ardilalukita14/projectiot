@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
-// #include <MQUnifiedsensor.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "CTBot.h"
+#include <SimpleDHT.h>
+
 CTBot myBot;
 
 const char *ssid = "Kochengimoet";      // silakan disesuaikan sendiri
@@ -12,7 +13,7 @@ const char *password = "gratisanterus"; // silakan disesuaikan sendiri
 String token = "5426893950:AAG5DZKvBkA--7kb6G4_2fRv9sPxjEzKdkM";
 const int id = 1163749622;
 
-const char *mqtt_server = "broker.hivemq.com";
+const char *mqtt_server = "168.138.23.97"; // isikan server broker
 
 #define Board "Arduino"
 #define Voltage_Resolution 5
@@ -31,6 +32,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+SimpleDHT11 dht11(D0);
 
 long now = millis();
 long lastMeasure = 0;
@@ -138,23 +140,23 @@ void scrollText(int row, String message, int delayTime, int lcdColumns)
 
 void loop()
 {
-  gas = analogRead(sensorMQ2);
+  // gas = analogRead(sensorMQ2);
   Serial.print("Nilai Sensor : ");
   Serial.println(gas);
   delay(1000);
 
-  if (gas <= 190)
+  if (gas <= 300)
   {
     Serial.println("Gas dalam kondisi aman!");
     digitalWrite(RED_LED, LOW);
     digitalWrite(GREEN_LED, HIGH);
     digitalWrite(BLUE_LED, LOW);
     noTone(buzzer);
-    myBot.sendMessage(id, "Gas dalam kondisi aman!");
+    myBot.sendMessage(id, "Ruangan dalam kondisi aman!");
     delay(1000);
   }
 
-  if (190 < gas && gas <= 385)
+  if (300 < gas && gas <= 500)
   {
     Serial.println("Terdeteksi adanya kebocoran gas!");
     digitalWrite(RED_LED, LOW);
@@ -165,7 +167,7 @@ void loop()
     delay(1000);
   }
 
-  if (gas > 385)
+  if (gas > 500)
   {
     Serial.println("Kebocoran gas darurat!");
     digitalWrite(RED_LED, HIGH);
@@ -182,31 +184,52 @@ void loop()
   }
   if (!client.loop())
   {
-    client.connect(macAddress.c_str());
+    // client.connect(macAddress.c_str());
+     client.connect("ESP8266Client");
   }
   now = millis();
   if (now - lastMeasure > 5000)
   {
     lastMeasure = now;
+    int err = SimpleDHTErrSuccess;
 
     // Reading LDR Censors
     gas = analogRead(sensorMQ2);
-    static char damp[7];
+    byte temperature = 0;
+    byte humidity = 0;
+    if ((err = dht11.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess)
+    {
+      Serial.print("Pembacaan DHT11 gagal, err=");
+      Serial.println(err);
+      delay(1000);
+      return;
+    }
+    // instansiasi variabel char
+    static char temperatureTemp[7];
+    static char humidityHum[7];
+    static char damp[8];
 
     // Convert
+    dtostrf(humidity, 1, 2, humidityHum);
+    dtostrf(temperature, 4, 2, temperatureTemp);
     dtostrf(gas, 4, 2, damp);
 
+    Serial.println(temperatureTemp);
+    Serial.println(humidityHum);
     Serial.println(damp);
 
     // Publish hasil output dari tiap sensor berdasarkan topic
+    client.publish("1941720043/room/humidity", humidityHum);
+    client.publish("1941720043/room/suhu", temperatureTemp);
     client.publish("1941720043/room/damp", damp);
   }
 
-  lcd.setCursor(0, 1);
-  scrollText(1, "Hasil deteksi kebocoran gas", 250, 16);
+  // lcd.setCursor(0, 0);
+  scrollText(0, "Alat Pendeteksi Kebocoran Gas", 220, 16);
 
   lcd.clear();
-  lcd.setCursor(0, 0);
+  lcd.setCursor(0, 1);
+  lcd.print("Nilai : ");
   lcd.print(gas);
   lcd.print(" ");
   lcd.print("ppm");
